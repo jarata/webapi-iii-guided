@@ -15,8 +15,19 @@ server.use(express.json());
 server.use(helmet());
 server.use(morgan('dev'));
 server.use(teamName);
+server.use(moodyGateKeeper);
 
 server.use('/api/hubs', hubsRouter);
+
+function moodyGateKeeper(req, res, next) {
+  const seconds = new Date().getSeconds();
+
+  if (seconds % 3 === 0) {
+    res.status(403).json('none shall pass')
+  } else {
+    next();
+  }
+}
 
 server.get('/', (req, res, next) => {
   res.send(`
