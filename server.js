@@ -23,6 +23,7 @@ server.use(teamName);
 server.use(restricted);
 // you can chain middleware and pass in arguements
 server.use('/api/hubs', restricted, only('frodo'));
+server.use(errorHandler)
 
 
 server.use('/api/hubs', hubsRouter);
@@ -80,16 +81,39 @@ function only (name) {
 //     })
 //   }
 // }
+// function restricted(req, res, next) {
+//     const password = req.headers.authorization;
+//
+//     if (password === 'mellon') {
+//         next();
+//     } else {
+//         res.status(401).json({message: 'You are not authorized'})
+//     }
+// }
+
+// it should accept a 'name' as its only argument and return 'middleware' that returns a 403 status code if
+// 'req.headers.name' is different from the name specified
+
 function restricted(req, res, next) {
     const password = req.headers.authorization;
 
-    if (password === 'mellon') {
-        next();
-    } else {
-        res.status(401).json({message: 'You are not authorized'})
+    if (req.headers && req.headers.authorization) {
+        if (password === 'mellon') {
+            next();
+        } else {
+            // fire the next error handler mdilldeware in the chain
+            next({
+                message: 'no authorization header provided'
+            })
+        }
     }
 }
 
+function errorHandler(error, req, res, next) {
+    res.status(400).json({
+        message: 'Error', error
+    })
+}
 // server.use(function (req, res) {
 //   res.status(404).send(`Ain't nobody got time for dat!`)
 // });
